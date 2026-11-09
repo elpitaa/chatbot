@@ -1,568 +1,307 @@
-# College RAG Chatbot
+# Chatbot Akademik Teknik Informatika UTM
 
-A production-ready **Retrieval-Augmented Generation (RAG) chatbot solution** designed to provide accurate, context-aware responses tailored to your college's specific knowledge base. This system leverages vector embeddings and large language models to deliver intelligent student support directly from your college's documented data.
+Chatbot akademik berbasis Retrieval-Augmented Generation (RAG) untuk membantu mahasiswa Teknik Informatika Universitas Trunojoyo Madura memperoleh informasi dari dokumen akademik resmi.
 
----
+Project ini menjalankan backend FastAPI dengan antarmuka HTML/JavaScript untuk pengguna dan dashboard administrator. Jawaban chatbot dibuat menggunakan dokumen yang diindeks ke ChromaDB dan model bahasa Groq.
 
-## Table of Contents
+## Tujuan Sistem
 
-- [Project Overview](#project-overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Architecture](#project-architecture)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Adding College Data to Vector Database](#adding-college-data-to-vector-database)
-- [Running the Project](#running-the-project)
-- [Example Workflow](#example-workflow)
-- [Troubleshooting](#troubleshooting)
-- [Future Improvements](#future-improvements)
+- Menjawab pertanyaan akademik berdasarkan knowledge base resmi.
+- Membantu mahasiswa mencari informasi kurikulum, skripsi, kerja praktik, perwalian, dan layanan akademik.
+- Membantu admin mengelola PDF knowledge base.
+- Mencatat pertanyaan populer, riwayat pertanyaan, dan pertanyaan yang belum terjawab.
 
----
+## Fitur
 
-## Project Overview
+### Chatbot User
 
-The **College RAG Chatbot** is an intelligent conversational system that answers user queries based exclusively on your college's verified knowledge base. Rather than relying on generic LLM training data, this chatbot retrieves relevant context from your documents and generates responses grounded in your college's specific information.
+- Chat RAG berbasis dokumen akademik.
+- Pencarian semantic dan keyword melalui ChromaDB.
+- Pertanyaan populer.
+- Pencatatan riwayat pertanyaan.
+- Jawaban fallback jika informasi tidak ditemukan.
 
-### Key Benefits
+### Dashboard Admin
 
-- **Accurate & Contextual**: Responses are based entirely on your college's documented data, eliminating hallucinations and out-of-context answers
-- **Scalable**: Easily add new documents to expand the knowledge base without retraining
-- **Enterprise-Ready**: Built with production-grade frameworks (FastAPI, Streamlit, LangChain)
-- **Conversational Memory**: Maintains chat history for coherent, multi-turn conversations
-- **Exportable**: Generate PDF transcripts of conversations for documentation and compliance
+- Login admin dengan password bcrypt.
+- Session cookie bertanda tangan HMAC.
+- CSRF protection dan rate limiting login.
+- Upload, indexing, dan penghapusan PDF.
+- Daftar pertanyaan belum terjawab.
+- Riwayat dan statistik pertanyaan.
+- Pengaturan profil admin dan konfigurasi sistem.
 
----
+## Teknologi
 
-## Features
+- Python 3.10 atau lebih baru direkomendasikan.
+- FastAPI dan Uvicorn.
+- LangChain.
+- ChromaDB untuk vector database.
+- HuggingFace Embeddings.
+- Groq untuk LLM.
+- pypdf dan PyMuPDF untuk PDF.
+- Tesseract OCR untuk PDF hasil scan.
+- HTML, JavaScript, dan Tailwind CSS CDN untuk frontend.
 
-- ✅ **RAG-Powered Knowledge Retrieval**: Fetches relevant college data from vector database
-- ✅ **Multi-Turn Conversations**: Maintains context across multiple exchanges using ConversationBufferMemory
-- ✅ **User Onboarding**: Guides users through intake questionnaires to understand their needs
-- ✅ **Resource Suggestions**: Recommends related college resources and services based on student context
-- ✅ **Chat History Management**: Browse, track, and export previous conversations
-- ✅ **PDF Export**: Generate conversation transcripts in PDF format
-- ✅ **Emoji Filtering**: Cleans text for consistent formatting across platforms
-- ✅ **Sensitive Topic Handling**: Gracefully responds to out-of-scope questions
-- ✅ **Dual Interface**: Both Streamlit UI and FastAPI REST endpoint support
-- ✅ **Configurable Prompts**: System and negative prompts can be customized for different use cases
+## Struktur Project
 
----
-
-## Tech Stack
-
-### Core Technologies
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **LLM** | Groq (llama-3.3-70b-versatile) | Primary language model for generating responses (currently used for development; production deployments should use professional, trusted LLM providers) |
-| **Embeddings** | HuggingFace Transformers | Converting text to vector representations |
-| **Vector Database** | Chroma | Persistent storage and retrieval of document embeddings |
-| **Frontend** | Streamlit | Interactive web-based user interface |
-| **Backend** | FastAPI | REST API for programmatic chatbot access |
-| **Orchestration** | LangChain | Chains embeddings, memory, and LLM components |
-| **PDF Generation** | FPDF | Export conversations as PDF documents |
-| **Document Processing** | pypdf, PyMuPDF, Tesseract OCR | Extract text and OCR scanned PDF documents |
-
-### Dependencies
-
-All required packages are listed in `requirements.txt`. Key packages include:
-- `fastapi`, `uvicorn` - Web framework and server
-- `streamlit` - Frontend interface
-- `langchain`, `langchain-huggingface`, `langchain-chroma`, `langchain-groq` - RAG orchestration
-- `pypdf`, `PyMuPDF`, `Pillow` - PDF text extraction and page rendering for OCR
-- `fpdf` - PDF generation
-- `pytesseract` - OCR for scanned documents
-
----
-
-## Project Architecture
-
-### High-Level Overview
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     User Interface Layer                    │
-│  ┌─────────────────┐              ┌──────────────────┐      │
-│  │   Streamlit     │              │   FastAPI REST   │      │
-│  │   Web UI        │              │   Endpoint       │      │
-│  └────────┬────────┘              └──────────┬───────┘      │
-└───────────┼──────────────────────────────────┼──────────────┘
-            │                                  │
-            └──────────────────┬───────────────┘
-                               │
-┌──────────────────────────────┴─────────────────────────────┐
-│                  Orchestration Layer (LangChain)           │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │  ConversationalRetrievalChain                        │  │
-│  │  ├─ Memory: ConversationBufferMemory                 │  │
-│  │  ├─ Retriever: Chroma Vector Store                   │  │
-│  │  └─ LLM: ChatGroq                                    │  │
-│  └──────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────┘
-            │                                 │
-    ┌───────┴────────┐                        |
-    │                │                        |  
-┌───▼────────┐  ┌───▼──────┐            ┌─────▼──────┐
-│  Embedding │  │  Groq    │            │ Chroma     │
-│  Model     │  │  LLM     │            │ Vector DB  │
-│ (HF)       │  │          │            │ (Persist)  │
-└────────────┘  └──────────┘            └────────────┘
-      │                                       |
-      └────────────┐                  ┌───────▼────────┐
-                   │                  │   Data Layer   │
-           ┌───────▼───────┐          │ ┌────────────┐ │
-           │ Document Layer│          │ │vector_db_  │ │
-           │ ┌───────────┐ │          │ │dir/        │ │
-           │ │data/      │ │          │ │chroma.db   │ │
-           │ │*.pdf      │ │          │ └────────────┘ │
-           │ └───────────┘ │          └────────────────┘
-           └───────────────┘
+```text
+.
+├── main.py                 # Aplikasi FastAPI dan endpoint chatbot/admin
+├── pdf_parser.py           # Ekstraksi teks PDF dan OCR
+├── vectorize_documents.py  # Pembuatan atau pembaruan vector database
+├── popular_questions.py    # Penyimpanan pertanyaan populer
+├── unanswered_questions.py  # Riwayat dan pertanyaan belum terjawab
+├── cli_chat.py             # Client chat melalui terminal
+├── codeUser.html           # Antarmuka chatbot user
+├── loginAdmin.html         # Halaman login admin
+├── codeAdmin.html          # Dashboard admin
+├── public/                 # Hanya aset yang boleh diakses browser
+├── .env.example            # Template secret environment
+├── config.example.json     # Template konfigurasi non-rahasia
+├── requirements.txt        # Dependency Python
+├── data/                   # Lokal: PDF dan JSON runtime, tidak di Git
+├── vector_db_dir/          # Lokal: ChromaDB, tidak di Git
+└── tessdata/               # Lokal: bahasa Tesseract, tidak di Git
 ```
 
-### Workflow
+`code.html` dipertahankan sebagai file frontend lama, tetapi route `/` saat ini menyajikan `codeUser.html`.
 
-1. **Document Ingestion**: PDFs are loaded from the `data/` directory
-2. **Text Extraction**: Content extracted and split into chunks
-3. **Vectorization**: Chunks converted to embeddings and stored in Chroma
-4. **User Query**: User submits question via UI or API
-5. **Retrieval**: Relevant chunks retrieved from vector database
-6. **Generation**: LLM generates response using retrieved context + prompt
-7. **Response**: Answer streamed to user with conversation memory maintained
+## Instalasi Lokal
 
----
+### Prasyarat
 
-## Installation
+- Python dan pip.
+- Tesseract OCR jika akan memproses PDF scan.
+- API key Groq.
+- Akses internet saat model embedding HuggingFace pertama kali diunduh.
 
-### Prerequisites
-
-- **Python 3.8+** (recommended: Python 3.10 or higher)
-- **pip** (Python package manager)
-- **Tesseract OCR** (required for scanned PDFs)
-  - Install on Windows with `winget install --id UB-Mannheim.TesseractOCR -e`
-  - Ensure the Indonesian language data (`ind.traineddata`) and English data (`eng.traineddata`) are installed.
-  - If Tesseract is not on `PATH`, set it for the current PowerShell session:
-
-    ```powershell
-    $env:TESSERACT_CMD = "C:\Program Files\Tesseract-OCR\tesseract.exe"
-    $tessdata = "D:\College_RAG_Chatbot\tessdata"
-    New-Item -ItemType Directory -Force $tessdata | Out-Null
-    $env:TESSDATA_DIR = $tessdata
-    Invoke-WebRequest `
-      -Uri "https://github.com/tesseract-ocr/tessdata/raw/main/ind.traineddata" `
-      -OutFile (Join-Path $tessdata "ind.traineddata")
-    ```
-
-  - The English data (`eng.traineddata`) is included in the normal installation; the command above adds Indonesian data. The parser always calls OCR with `lang="ind+eng"`.
-- **GROQ API Key**
-  - Sign up at [Groq Console](https://console.groq.com)
-  - Generate an API key from your account settings
-
-### Step 1: Clone the Repository
+Pada Linux/Ubuntu:
 
 ```bash
-git clone <repository-url>
-cd College_RAG_Chatbot
+sudo apt update
+sudo apt install python3 python3-venv python3-pip tesseract-ocr tesseract-ocr-ind
 ```
 
-### Step 2: Create a Virtual Environment (Recommended)
+Pada Windows, install Tesseract dan pastikan executable tersedia di `PATH`, atau set `TESSERACT_CMD`.
+
+### Virtual Environment dan Dependency
+
+Linux/macOS:
 
 ```bash
-# On Windows
-python -m venv venv
-venv\Scripts\activate
-
-# On macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### Step 3: Install Dependencies
-
-```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-This installs:
-- `fastapi`, `uvicorn` - Web framework
-- `streamlit` - Frontend
-- `langchain`, `langchain-huggingface`, `langchain-chroma`, `langchain-groq` - RAG pipeline
-- `pypdf2` - PDF processing
-- `fpdf` - PDF export
-- `pytesseract` - OCR (optional)
+Windows PowerShell:
 
-### Step 4: Verify Installation
-
-```bash
-python -c "import streamlit; import fastapi; import langchain; print('All dependencies installed successfully!')"
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
----
+## Konfigurasi
 
-## Configuration
+### File `.env`
 
-### Step 1: Create `config.json`
+Salin `.env.example` menjadi `.env`, lalu isi dengan nilai milik deployment. Jangan commit atau upload `.env`.
 
-Create a file named `config.json` in the project root directory:
-
-```bash
-# Windows
-echo {} > config.json
-
-# macOS/Linux
-touch config.json
+```env
+GROQ_API_KEY=<groq-api-key>
+ADMIN_USERNAME=<admin-username>
+ADMIN_EMAIL=<admin-email>
+ADMIN_PASSWORD_HASH=<bcrypt-password-hash>
+ADMIN_SESSION_SECRET=<random-session-secret>
+COOKIE_SECURE=true
 ```
 
-### Step 2: Add API Keys
+Password admin harus berupa bcrypt hash. Jangan mengisi `ADMIN_PASSWORD_HASH` dengan password plaintext.
 
-Edit `config.json` and add your Groq API key:
+Untuk membuat hash bcrypt melalui environment project:
+
+```bash
+python -c "import bcrypt; print(bcrypt.hashpw(input('Password: ').encode(), bcrypt.gensalt()).decode())"
+```
+
+Pada testing lokal HTTP, `COOKIE_SECURE=false` dapat digunakan. Pada HTTPS production, gunakan `true`.
+
+### File `config.json`
+
+`config.json` bersifat opsional untuk konfigurasi non-rahasia yang dapat diubah dari dashboard, misalnya:
 
 ```json
 {
-  "GROQ_API_KEY": "gsk_your_actual_api_key_here",
-  "COLLEGE_NAME": "Your College Name"
+  "COLLEGE_NAME": "Universitas Trunojoyo Madura",
+  "ADMIN_NAME": "Administrator IF UTM"
 }
 ```
 
-**Important**: 
-- Replace `gsk_your_actual_api_key_here` with your actual Groq API key
-- Replace `Your College Name` with your college's actual name
-- **Never commit `config.json` to version control** - add it to `.gitignore`
+Gunakan `config.example.json` sebagai template. API key, password, username, email, dan session secret tidak boleh disimpan di file ini.
 
-### Step 3: Update College Name Throughout Code
+Jika `config.json` belum ada, aplikasi menggunakan nilai default non-rahasia dan dapat membuat file tersebut saat admin menyimpan pengaturan. Secret tetap disimpan di `.env`.
 
-The codebase contains placeholder text `"College Name"` that should be replaced with your actual college name. Key files:
+## Menyiapkan Knowledge Base
 
-- **`main.py`**: Update system prompts, page titles, and UI text
-- **`vectorize_documents.py`**: Update any prompts or labels (if modified)
+Folder `data/` dan `vector_db_dir/` sengaja tidak ada di repository GitHub karena dapat berisi dokumen akademik dan data lokal.
 
-Use Find & Replace (Ctrl+H or Cmd+H) to replace all instances:
-
-```
-Find:    "College Name"
-Replace: "Your Actual College Name"
-```
-
-### Step 4: (Optional) Configure Tesseract Path
-
-If using scanned PDFs with OCR, update the Tesseract path in `vectorize_documents.py`:
-
-```python
-# On Windows
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
-# On macOS
-pytesseract.pytesseract.tesseract_cmd = '/usr/local/bin/tesseract'
-
-# On Linux
-pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
-```
-
----
-
-## Adding College Data to Vector Database
-
-### Overview
-
-The chatbot's knowledge base is built from your college's documents. Use `vectorize_documents.py` to process and store documents in the vector database.
-
-### Supported Formats
-
-- **PDF files** (.pdf) - Text extraction via PyPDF2
-- **Scanned PDFs** - OCR extraction via Tesseract (if installed)
-
-### Step 1: Prepare Documents
-
-1. Create a `data/` directory in the project root (if it doesn't exist)
-2. Place your college documents (PDFs) in the `data/` directory
-
-```
-College_RAG_Chatbot/
-├── data/
-│   ├── college_handbook.pdf
-│   ├── programs_overview.pdf
-│   ├── admissions_guide.pdf
-│   └── student_faq.pdf
-├── main.py
-├── vectorize_documents.py
-└── config.json
-```
-
-### Step 2: Run Vectorization Script
+1. Buat folder `data/`.
+2. Salin PDF akademik ke `data/`.
+3. Jika membuat vector database baru, jalankan:
 
 ```bash
 python vectorize_documents.py
 ```
 
-**What happens:**
-1. Reads all PDF files from `data/` directory
-2. Extracts text from each PDF
-3. Splits text into 2000-character chunks with 500-character overlap
-4. Generates embeddings using HuggingFace transformers
-5. Stores embeddings in Chroma vector database (`vector_db_dir/`)
-6. Displays progress and completion status
+4. Pastikan `vector_db_dir/` terbentuk.
 
-**Output Example:**
-```
-Loading embedding model...
-Loading and processing PDF documents...
-Processing college_handbook.pdf...
-Successfully processed college_handbook.pdf
-Processing programs_overview.pdf...
-Successfully processed programs_overview.pdf
-Successfully loaded 2 documents
-Splitting documents into chunks...
-Split documents into 47 chunks
-Creating vector database...
-Successfully vectorized and stored documents in 'vector_db_dir'
-```
+Saat deployment, vector database yang sudah ada dapat digunakan kembali dengan menyalin seluruh folder `vector_db_dir/` ke folder project server. ChromaDB akan membuka persistence directory tersebut; tidak perlu membuat embedding ulang selama struktur dan model embedding tetap kompatibel.
 
-### Step 3: Verify Vectorization
+PDF tetap perlu disalin ke `data/` karena dashboard membaca daftar dokumen dari folder tersebut. Riwayat pertanyaan disimpan di:
 
-- Check that `vector_db_dir/` directory has been created
-- Confirm `chroma.sqlite3` database file exists
+- `data/popular_questions.json`
+- `data/unanswered_questions.json`
 
-### Adding More Documents Later
+Jangan menghapus file-file tersebut saat memperbarui aplikasi.
 
-Simply add new PDFs to the `data/` directory and run the vectorization script again:
+## Menjalankan Aplikasi
+
+Aplikasi aktif menggunakan FastAPI, bukan Streamlit.
 
 ```bash
-python vectorize_documents.py
+uvicorn main:app --host 127.0.0.1 --port 8501
 ```
 
-New documents will be added to the existing vector database without losing previous documents.
+Buka:
 
-### Troubleshooting Document Processing
+- User: `http://127.0.0.1:8501/`
+- Login admin: `http://127.0.0.1:8501/admin/login`
 
-| Issue | Solution |
-|-------|----------|
-| `No documents found` | Ensure PDFs are in `data/` directory with `.pdf` extension |
-| `PDF extraction failed` | Verify PDF is not corrupted; try opening in Adobe Reader |
-| `Tesseract not found` | Install Tesseract or update path in `vectorize_documents.py` |
-| `Memory error with large PDFs` | Split large PDFs into smaller files |
-
----
-
-## Running the Project
-
-### Option 1: Streamlit Web Interface (Recommended for Users)
-
-The Streamlit interface provides an interactive chatbot with a rich UI, chat history, and PDF export.
+Untuk akses dari jaringan lokal saat testing saja:
 
 ```bash
-streamlit run main.py
+uvicorn main:app --host 0.0.0.0 --port 8501
 ```
 
-**What to expect:**
-- Opens in your default browser at `http://localhost:8501`
-- Displays chatbot interface with sidebar containing college info
-- Shows chat history and allows exporting conversations to PDF
-- Supports real-time conversation with streaming responses
+Pada production, bind ke `127.0.0.1` dan gunakan Nginx sebagai reverse proxy HTTPS.
 
-### Option 2: FastAPI REST Endpoint (Recommended for Integration)
+## Pengujian
 
-The FastAPI backend provides a programmatic interface for chatbot integration.
+Pemeriksaan sintaks dan import:
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+python -m py_compile main.py pdf_parser.py popular_questions.py unanswered_questions.py vectorize_documents.py cli_chat.py
+python -c "import main, pdf_parser, popular_questions, unanswered_questions, vectorize_documents, cli_chat; print('imports ok')"
+python -m pip check
 ```
 
-**API Endpoint:**
-```
-POST http://localhost:8000/chat
-```
+Pemeriksaan endpoint dasar:
 
-**Request Format:**
-```json
-{
-  "message": "What programs does your college offer?"
-}
-```
-
-**Response Format:**
-```json
-{
-  "response": "Based on our college data, we offer the following programs..."
-}
-```
-
-**Example cURL Request:**
 ```bash
-curl -X POST "http://localhost:8000/chat" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "What is your college known for?"}'
+curl http://127.0.0.1:8501/
+curl http://127.0.0.1:8501/admin/login
 ```
 
-### Running Both Simultaneously (Advanced)
+Checklist manual:
 
-In separate terminal windows:
+- Halaman user terbuka.
+- Login admin berhasil dengan credential dari `.env`.
+- Dashboard admin mengarahkan user tanpa session kembali ke login.
+- Logout menghapus session.
+- Upload PDF berhasil dan jumlah chunk dikembalikan.
+- PDF muncul pada daftar dokumen.
+- Pertanyaan tampil pada riwayat atau daftar belum terjawab.
+- File `config.json` tidak dapat diakses melalui `/static/config.json`.
+- `data/` dan `vector_db_dir/` tetap ada setelah restart aplikasi.
 
-**Terminal 1 - FastAPI Backend:**
+## Backup dan Restore Data
+
+Backup minimal harus mencakup:
+
+- `data/`
+- `vector_db_dir/`
+- `config.json` jika berisi konfigurasi non-rahasia yang ingin dipertahankan
+- `.env` melalui media rahasia terpisah, bukan Git
+- `tessdata/` jika memakai OCR dengan data bahasa lokal
+
+Linux:
+
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8000
+tar -czf chatbot-data-backup.tar.gz data vector_db_dir tessdata config.json
 ```
 
-**Terminal 2 - Streamlit Frontend:**
+Backup secret secara terpisah dan aman:
+
 ```bash
-streamlit run main.py
+cp .env /secure/backup/location/chatbot.env
+chmod 600 /secure/backup/location/chatbot.env
 ```
 
-The Streamlit app can be modified to call the FastAPI endpoint instead of running locally.
+Restore dilakukan dengan mengekstrak kembali folder ke root project yang sama, lalu memastikan owner dan permission service benar.
 
----
+Windows PowerShell:
 
-## Example Workflow
-
-### Scenario: New Customer Inquiry
-
-**Step 1: User Opens Chatbot**
-```
-User navigates to http://localhost:8501
-Chatbot displays welcome message with college logo
+```powershell
+Compress-Archive -Path data,vector_db_dir,tessdata,config.json -DestinationPath chatbot-data-backup.zip
 ```
 
-**Step 2: Initial Interaction (Onboarding)**
-```
-Chatbot: "Welcome! To help you better, could you tell me:
-1. What service are you looking for today?
-2. What type of business do you run?"
+Jangan menyimpan `.env` di archive yang akan di-upload ke GitHub.
 
-User: "I'm a startup looking for web design services"
-```
+## Persiapan Deployment Linux
 
-**Step 3: Retrieval & Generation**
-```
-Behind the scenes:
-1. Chatbot retrieves relevant web design docs from vector DB
-2. Groq LLM generates contextual response using college data
-3. Response includes relevant service details and suggestions
-```
+1. Clone repository.
+2. Buat virtual environment dan install `requirements.txt`.
+3. Install Tesseract jika OCR diperlukan.
+4. Buat `.env` di server dengan permission terbatas.
+5. Salin `data/`, `vector_db_dir/`, dan `tessdata/` dari backup.
+6. Salin `config.json` hanya jika diperlukan.
+7. Jalankan uji lokal dengan Uvicorn.
+8. Buat service systemd agar aplikasi tetap aktif setelah SSH ditutup.
+9. Gunakan Nginx untuk domain dan HTTPS.
+10. Pastikan port aplikasi hanya terbuka untuk localhost dan firewall hanya membuka SSH/HTTP/HTTPS sesuai kebutuhan.
 
-**Step 4: Assistant Response**
-```
-Chatbot: "Great! We offer comprehensive web design services including:
-• Responsive UI/UX design
-• Frontend development
-• CMS integration
-• Performance optimization
+Contoh command service sementara:
 
-Since you're a startup, you might also benefit from our 
-branding and digital marketing services to maximize visibility."
-```
-
-**Step 5: Chat History & Export**
-```
-User continues conversation or exports chat to PDF
-PDF includes full conversation transcript with timestamp
-```
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| **Module not found** | Ensure all dependencies installed: `pip install -r requirements.txt` |
-| **Groq API Key error** | Verify API key in `config.json`; check Groq account permissions |
-| **Vector DB not found** | Run `python vectorize_documents.py` to create database |
-| **Streamlit not starting** | Check Python version (3.8+); try `streamlit run main.py --logger.level=debug` |
-| **Slow responses** | Check internet connection (requires Groq API access); verify document count in vector DB |
-| **PDF export fails** | Ensure write permissions in project directory; check file name for special characters |
-
-### Debug Mode
-
-For detailed logging, modify `main.py`:
-
-```python
-# Add at the top of main.py
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
-
-For Streamlit debug output:
 ```bash
-streamlit run main.py --logger.level=debug
+uvicorn main:app --host 127.0.0.1 --port 8501
 ```
 
----
+Jangan menggunakan `--reload` pada production.
 
-## Future Improvements
+## Keamanan Repository
 
-### Phase 2: Enhanced Features
-- [ ] **Multi-language Support**: Auto-detect and respond in user's language
-- [ ] **Advanced Analytics**: Track query patterns, user satisfaction, common topics
-- [ ] **Knowledge Base Management UI**: Web interface for adding/updating documents without coding
-- [ ] **Conversation Analytics Dashboard**: Visual metrics on bot performance and usage
-- [ ] **User Authentication**: Track individual users; personalize responses based on user history
+File berikut sengaja tidak disimpan di Git:
 
-### Phase 3: Scalability & Performance
-- [ ] **Caching Layer**: Cache frequent queries for faster responses
-- [ ] **Database Optimization**: Index vector DB for faster retrieval
-- [ ] **Load Balancing**: Deploy multiple bot instances with load balancer
-- [ ] **Async Document Processing**: Handle large document uploads asynchronously
-- [ ] **GraphQL API**: Alternative REST endpoint with flexible querying
+- `.env`
+- `config.json`
+- `data/`
+- `vector_db_dir/`
+- `tessdata/`
+- PDF, JSON runtime, SQLite, log, cache, dan file sementara
 
-### Phase 4: Intelligence & Customization
-- [ ] **For Sensitive Inquiries**: Always escalate to appropriate human representatives
-- [ ] **Fine-tuned Models**: Option to fine-tune Groq model on college-specific language
-- [ ] **Custom Prompt Builder**: UI to create and test different system prompts
-- [ ] **Fallback Mechanisms**: Escalate to human agent if confidence score is low
-- [ ] **A/B Testing**: Test different response styles and track effectiveness
-- [ ] **Feedback Loop**: Allow users to rate responses; use feedback to improve system
+Folder `public/` hanya berisi aset yang boleh dilihat browser. Jangan menaruh credential atau dokumen privat di folder tersebut.
 
-### Phase 5: Integration & Deployment
-- [ ] **Slack Integration**: Deploy chatbot as Slack bot for internal use
-- [ ] **WhatsApp/Telegram**: Multi-channel support for messaging platforms
-- [ ] **CRM Integration**: Connect to Salesforce/HubSpot for customer data
-- [ ] **Docker Containerization**: Package for easy deployment
-- [ ] **Kubernetes Orchestration**: Deploy on cloud platforms (AWS, GCP, Azure)
+## Status Repository
 
----
+Repository GitHub utama:
 
-## License
+```text
+https://github.com/elpitaa/chatbot
+```
 
-See the [LICENSE](LICENSE) file for licensing information.
+Branch utama: `main`.
 
----
+Perubahan lokal yang sudah diperiksa dapat diunggah dengan:
 
-## Support & Contributions
+```bash
+git status
+git add README.md config.example.json requirements.txt .gitignore
+git commit -m "Improve deployment documentation and configuration"
+git push origin main
+```
 
-For issues, questions, or contributions:
-
-1. **Report Issues**: Create an issue with detailed reproduction steps
-2. **Suggest Features**: Open a feature request with use case details
-3. **Contributing**: Fork the repository, create a feature branch, and submit a pull request
-
----
-
-## Disclaimer
-
-This chatbot provides responses based exclusively on your college's verified data. It does not:
-- Make legal, financial, or medical decisions
-- Access real-time data beyond the initial knowledge base
-- Guarantee 100% accuracy (always verify critical information)
-- Replace professional human support
-
-For sensitive inquiries, always escalate to appropriate human representatives.
-
----
-
-## Contact
-
-- 📧 Email: [shahdeep1406@gmail.com](mailto:shahdeep1406@gmail.com)
-- 🐙 GitHub: [DeepShah1406](https://github.com/DeepShah1406)
-- 💼 LinkedIn: [deepshah1406](https://www.linkedin.com/in/deepshah1406)
-
----
-
-## **Acknowledgments**
-
-- **LangChain**: For building robust chains of logic for querying and text processing.
-- **Chroma**: For efficiently managing and querying vectorized data.
-
----
-
-**Last Updated**: December 2025  
-**Version**: 1.0.0
+Perintah push harus dijalankan secara sadar setelah memeriksa `git diff --cached` dan memastikan tidak ada secret.
