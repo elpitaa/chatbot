@@ -1,0 +1,83 @@
+<!DOCTYPE html><html lang="id"><head>
+<!-- Metadata dasar agar halaman mendukung karakter Indonesia dan layar responsif. -->
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Admin RAG Knowledge Base IF UTM</title>
+<!-- Tailwind CSS menyediakan class untuk layout dan tampilan form login. -->
+<!-- Tailwind CSS CDN with forms plugin -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    // Konfigurasi warna brand dan font yang digunakan pada halaman admin.
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f5fc',
+              100: '#e1ecf8',
+              500: '#2b6cb0',
+              800: '#1e3a8a',
+              900: '#112240',
+              accent: '#0d3880',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-typography">
+    /* Membuat rendering teks lebih halus pada browser. */
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+<meta content="web_standard" name="shell-type">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"></head>
+<body class="bg-[#fcfdff] text-slate-700 min-h-screen flex flex-col font-sans">
+<!-- BEGIN: MainHeader -->
+<!-- Header menampilkan logo aplikasi dan tautan kembali ke chatbot mahasiswa. -->
+<header class="w-full bg-white border-b border-slate-200/80 px-6 py-2.5 flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.02)] sticky top-0 z-30"><div class="flex items-center gap-3"><div class="h-10 flex items-center gap-2"><img src="/static/UTM.png" alt="Logo UTM" class="h-9 w-auto object-contain"><img src="/static/logo-fakultas.png" alt="Logo Fakultas" class="h-9 w-auto object-contain"><img src="/static/logo-prodi.png" alt="Logo Program Studi" class="h-9 w-auto object-contain"></div><div class="h-4 w-px bg-slate-200 mx-1"></div><span class="text-xs font-semibold text-slate-700">RAG Chatbot IF UTM</span></div><div class="flex items-center gap-4 text-xs font-medium text-slate-600"><a class="flex items-center gap-1.5 text-slate-600 hover:text-primary transition-colors py-1 px-2.5 rounded-md hover:bg-slate-50" href="/"><span class="material-symbols-outlined text-[16px]">arrow_back</span><span class="">Kembali ke Chatbot</span></a></div></header>
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<!-- Area utama berisi kartu form login administrator. -->
+<!-- Kartu login meminta username/email dan password admin. -->
+<main class="flex-1 max-w-4xl w-full mx-auto px-4 py-8 flex flex-col justify-start"><div class="w-full flex-1 flex flex-col items-center justify-center py-12"><div class="w-full max-w-[340px] bg-white border border-slate-200/80 shadow-sm rounded-xl p-6 sm:p-9"><div class="text-center mb-6"><h1 class="text-[20px] font-bold text-slate-900 tracking-tight mb-1">Login Admin</h1><p class="text-xs text-slate-500">Sistem RAG Chatbot IF UTM</p></div><form class="space-y-4" id="admin-login-form"><div class="space-y-1.5"><label class="block text-xs font-medium text-slate-700" for="identifier">Username / Email</label><input class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition-all" id="identifier" name="username" placeholder="admin" required="" type="text"></div><div class="space-y-1.5"><label class="block text-xs font-medium text-slate-700" for="password">Password</label><input class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition-all" id="password" name="password" placeholder="Password admin" required="" type="password"></div><!-- Pesan kesalahan login ditampilkan di elemen ini. --><p class="text-xs text-red-600 min-h-4" id="login-error"></p><div class="pt-2"><button class="w-full py-2.5 px-4 rounded-lg bg-primary-container hover:bg-primary text-white text-sm font-medium transition-colors shadow-sm" type="submit">Masuk</button></div></form><div class="mt-6 text-center"><a class="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-primary transition-colors" href="/"><span class="material-symbols-outlined text-[14px]">arrow_back</span><span class="">Kembali ke Chatbot</span></a></div></div></div></main>
+<!-- END: MainContent -->
+<!-- BEGIN: MainFooter -->
+
+<!-- END: MainFooter -->
+<script>
+// Tangani submit form login tanpa memuat ulang seluruh halaman.
+document.getElementById('admin-login-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  // Ambil form dan elemen untuk menampilkan pesan error.
+  const form = event.currentTarget;
+  const error = document.getElementById('login-error');
+  error.textContent = '';
+  try {
+    const csrfCookie = document.cookie.split('; ').find((item) => item.startsWith('admin_csrf='));
+    const csrfToken = csrfCookie ? decodeURIComponent(csrfCookie.split('=')[1]) : '';
+    // Kirim username dan password sebagai multipart form ke endpoint FastAPI.
+    const response = await fetch('/admin/login', {
+      method: 'POST',
+      headers: { 'X-CSRF-Token': csrfToken },
+      body: new FormData(form)
+    });
+    // Backend mengembalikan JSON berisi pesan sukses atau detail error.
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || 'Login gagal.');
+    // Jika berhasil, buka dashboard admin sesuai redirect dari backend.
+    window.location.href = data.redirect;
+  } catch (exception) {
+    // Tampilkan kesalahan login tanpa membuka halaman baru.
+    error.textContent = exception.message;
+  }
+});
+</script>
+
+
+</body></html>

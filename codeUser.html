@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<!-- Metadata halaman dan library tampilan. -->
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Informatika AI Assistant - Universitas Trunojoyo Madura</title>
+<!-- Tailwind CSS dipakai untuk utility class layout, warna, spacing, dan responsive design. -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Font Inter digunakan untuk tampilan teks antarmuka. -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="base-styling">
+    /* Font default untuk seluruh halaman. */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+<style data-purpose="custom-scroll">
+    /* Tampilan scrollbar agar lebih tipis dan rapi. */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800 min-h-screen flex flex-col antialiased selection:bg-blue-100 selection:text-blue-700">
+<!-- BEGIN: MainHeader -->
+<!-- Header menampilkan identitas kampus, status chatbot, dan tautan portal prodi. -->
+<header class="w-full bg-white border-b border-slate-200/80 sticky top-0 z-30 transition-shadow">
+<div class="max-w-[1720px] mx-auto px-4 sm:px-8 py-3.5 flex items-center justify-between">
+<!-- Logo kampus/fakultas/prodi dan badge status layanan. -->
+<div class="flex items-center space-x-4 sm:space-x-5" data-purpose="header-brand-group">
+<!-- Logo Group UTM & Fakultas Teknik & Teknik Informatika -->
+<div class="h-10 flex items-center gap-2 pr-2 border-r border-slate-200" data-purpose="partner-logos">
+<img src="/static/UTM.png" alt="Logo UTM" class="h-9 w-auto object-contain">
+<img src="/static/logo-fakultas.png" alt="Logo Fakultas" class="h-9 w-auto object-contain">
+<img src="/static/logo-prodi.png" alt="Logo Program Studi" class="h-9 w-auto object-contain">
+</div>
+<!-- Academic Bot Status Badge -->
+<div class="inline-flex items-center space-x-2 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-150 rounded-full border border-slate-200 transition-colors" data-purpose="status-badge">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-xs sm:text-sm font-medium text-slate-700">Chatbot Layanan Akademik TIF UTM</span>
+</div>
+</div>
+<!-- Tautan untuk kembali ke portal resmi Teknik Informatika. -->
+<div class="flex items-center">
+<a class="inline-flex items-center space-x-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors group" href="https://informatika.trunojoyo.ac.id/" title="Kembali ke Portal Prodi Teknik Informatika">
+<svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Kembali ke Portal Prodi</span>
+</a>
+</div>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<!-- Konten utama berisi pengenalan chatbot, pertanyaan populer, dan area percakapan. -->
+<main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-36 flex flex-col items-center justify-start">
+<!-- Bagian pembuka yang menjelaskan fungsi chatbot kepada mahasiswa. -->
+<section class="flex flex-col items-center text-center mb-10 w-full" data-purpose="hero-section">
+<!-- Brain / AI Chip Central Icon -->
+<div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#133E87] flex items-center justify-center text-white shadow-lg shadow-blue-900/10 mb-4 transition-transform hover:scale-105 duration-200" data-purpose="ai-avatar-icon">
+<svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M12 2a4 4 0 0 0-4 4v1a4 4 0 0 0-3 3.87A3.5 3.5 0 0 0 3 14c0 1.6 1.1 2.95 2.6 3.35A3.5 3.5 0 0 0 9 20h6a3.5 3.5 0 0 0 3.4-2.65c1.5-.4 2.6-1.75 2.6-3.35a3.5 3.5 0 0 0-2-3.13A4 4 0 0 0 16 7V6a4 4 0 0 0-4-4z"></path>
+<path d="M12 2v20"></path>
+<path d="M8 8h8"></path>
+<path d="M7 13h10"></path>
+<path d="M8 17h8"></path>
+</svg>
+</div>
+<!-- Main Titles -->
+<h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-2">
+        Asisten Akademik Informatika
+      </h1>
+<p class="text-sm sm:text-base text-slate-500 max-w-lg leading-relaxed">
+        Silakan tulis pertanyaan seputar akademik Teknik Informatika UTM.
+      </p>
+</section>
+<!-- Kartu pertanyaan populer yang dapat diklik untuk mengisi input otomatis. -->
+<!-- BEGIN: QuickSuggestionsSection -->
+<section class="w-full max-w-3xl mb-8" data-purpose="faq-prompt-recommendations">
+<div class="flex items-center justify-between mb-3.5 px-1">
+<div class="flex items-center space-x-2">
+<svg class="w-4 h-4 text-[#133E87]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-xs uppercase tracking-wider font-semibold text-slate-500">Pertanyaan Populer</span>
+<span id="popular-badge" class="hidden inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700">Real-time</span>
+</div>
+<span class="text-xs text-slate-400 font-medium">Klik untuk mengisi</span>
+</div>
+<!-- Isi awal kartu; nantinya dapat diganti data dinamis dari endpoint backend. -->
+<!-- Recommendation Cards Grid (Dinamis dari Pertanyaan Populer Mahasiswa & Fallback) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="quick-prompts-container">
+<!-- Suggestion Card 1 -->
+<button class="group flex items-start p-3.5 rounded-xl bg-white border border-slate-200/90 hover:border-blue-400/80 hover:bg-blue-50/30 hover:shadow-sm text-left transition-all duration-150" onclick="insertPrompt('Syarat Pengajuan Judul &amp; Sidang Skripsi')" type="button">
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mr-3 mt-0.5 group-hover:bg-blue-600 group-hover:text-white transition-colors flex-shrink-0">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<span class="text-sm font-medium text-slate-800 group-hover:text-blue-900 leading-snug block">Syarat Pengajuan Judul &amp; Sidang Skripsi</span>
+<span class="text-xs text-slate-400 mt-0.5 block">Tahapan berkas, komisi etik &amp; jadwal pendaftaran</span>
+</div>
+</button>
+<!-- Suggestion Card 2 -->
+<button class="group flex items-start p-3.5 rounded-xl bg-white border border-slate-200/90 hover:border-blue-400/80 hover:bg-blue-50/30 hover:shadow-sm text-left transition-all duration-150" onclick="insertPrompt('Alur KRS &amp; Prasyarat Mata Kuliah Wajib')" type="button">
+<div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mr-3 mt-0.5 group-hover:bg-indigo-600 group-hover:text-white transition-colors flex-shrink-0">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<span class="text-sm font-medium text-slate-800 group-hover:text-blue-900 leading-snug block">Alur KRS &amp; Prasyarat Mata Kuliah Wajib</span>
+<span class="text-xs text-slate-400 mt-0.5 block">Prasyarat SKS, validasi DPA, dan pembagian kelas</span>
+</div>
+</button>
+<!-- Suggestion Card 3 -->
+<button class="group flex items-start p-3.5 rounded-xl bg-white border border-slate-200/90 hover:border-blue-400/80 hover:bg-blue-50/30 hover:shadow-sm text-left transition-all duration-150" onclick="insertPrompt('Batas Maksimal Skor Similarity Turnitin')" type="button">
+<div class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center mr-3 mt-0.5 group-hover:bg-teal-600 group-hover:text-white transition-colors flex-shrink-0">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<span class="text-sm font-medium text-slate-800 group-hover:text-blue-900 leading-snug block">Batas Maksimal Skor Similarity Turnitin</span>
+<span class="text-xs text-slate-400 mt-0.5 block">Toleransi persentase &amp; verifikasi bebas plagiasi</span>
+</div>
+</button>
+<!-- Suggestion Card 4 -->
+<button class="group flex items-start p-3.5 rounded-xl bg-white border border-slate-200/90 hover:border-blue-400/80 hover:bg-blue-50/30 hover:shadow-sm text-left transition-all duration-150" onclick="insertPrompt('Jadwal &amp; Prosedur Peminjaman Lab Riset')" type="button">
+<div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mr-3 mt-0.5 group-hover:bg-amber-600 group-hover:text-white transition-colors flex-shrink-0">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<span class="text-sm font-medium text-slate-800 group-hover:text-blue-900 leading-snug block">Jadwal &amp; Prosedur Peminjaman Lab Riset</span>
+<span class="text-xs text-slate-400 mt-0.5 block">Form izin lab cerdas, rekayasa web, &amp; jaringan</span>
+</div>
+</button>
+<!-- Suggestion Card 5 -->
+<button class="group flex items-start p-3.5 rounded-xl bg-white border border-slate-200/90 hover:border-blue-400/80 hover:bg-blue-50/30 hover:shadow-sm text-left transition-all duration-150" onclick="insertPrompt('Jadwal Layanan Konsultasi Koordinator TA')" type="button">
+<div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center mr-3 mt-0.5 group-hover:bg-sky-600 group-hover:text-white transition-colors flex-shrink-0">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<span class="text-sm font-medium text-slate-800 group-hover:text-blue-900 leading-snug block">Jadwal Layanan Konsultasi Koordinator TA</span>
+<span class="text-xs text-slate-400 mt-0.5 block">Jam kerja luring, link booking, dan ruang prodi</span>
+</div>
+</button>
+<!-- Suggestion Card 6 -->
+<button class="group flex items-start p-3.5 rounded-xl bg-white border border-slate-200/90 hover:border-blue-400/80 hover:bg-blue-50/30 hover:shadow-sm text-left transition-all duration-150" onclick="insertPrompt('Panduan Kerja Praktik (KP) &amp; Magang')" type="button">
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mr-3 mt-0.5 group-hover:bg-emerald-600 group-hover:text-white transition-colors flex-shrink-0">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<span class="text-sm font-medium text-slate-800 group-hover:text-blue-900 leading-snug block">Panduan Kerja Praktik (KP) &amp; Magang</span>
+<span class="text-xs text-slate-400 mt-0.5 block">Surat pengantar, konversi SKS MSIB &amp; format laporan</span>
+</div>
+</button>
+</div>
+</section>
+<!-- END: QuickSuggestionsSection -->
+<!-- Pesan user dan jawaban assistant ditambahkan ke section ini melalui JavaScript. -->
+<section class="w-full max-w-3xl space-y-3 mb-8" id="chat-messages" aria-live="polite"></section>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: BottomChatInputBar -->
+<!-- Bar input selalu berada di bagian bawah layar agar mudah digunakan. -->
+<footer class="fixed bottom-0 inset-x-0 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/95 to-transparent pb-4 pt-6 z-20" data-purpose="chat-input-wrapper">
+<div class="max-w-4xl mx-auto px-4">
+<!-- Input Box Container -->
+<form class="relative flex items-center bg-white rounded-2xl border border-slate-200/90 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] px-4 py-2 hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all" id="chat-form">
+
+<!-- Input pertanyaan mahasiswa. -->
+<input autocomplete="off" class="w-full bg-transparent border-0 focus:ring-0 text-slate-800 placeholder-slate-400 text-sm sm:text-[15px] py-2 px-1 focus:outline-none" id="user-query-input" placeholder="Tanyakan seputar kurikulum, skripsi, dosen, atau layanan prodi..." type="text"/>
+<!-- Tombol submit untuk mengirim pertanyaan ke endpoint /chat. -->
+<button class="ml-2 w-10 h-10 rounded-xl bg-[#133E87] hover:bg-[#0e2f69] active:scale-95 text-white flex items-center justify-center transition-all flex-shrink-0 shadow-sm" title="Kirim pertanyaan" type="submit">
+<svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</form>
+<!-- Pengingat bahwa jawaban tetap perlu diverifikasi pada sumber resmi. -->
+<p class="text-center text-[11px] sm:text-xs text-slate-400 mt-2.5 font-normal tracking-tight" data-purpose="disclaimer-text">
+        AI Asisten Akademik TIF UTM • Verifikasi putusan resmi tetap merujuk pada Pedoman Fakultas &amp; Dosen Wali.
+      </p>
+</div>
+</footer>
+<!-- END: BottomChatInputBar -->
+<script data-purpose="interaction-handlers">
+    // Isi input dengan pertanyaan populer ketika kartu rekomendasi diklik.
+    function insertPrompt(text) {
+      const input = document.getElementById('user-query-input');
+      if (input) {
+        input.value = text;
+        input.focus();
+      }
+    }
+
+    function addMessage(text, role) {
+      // Buat bubble chat baru dan bedakan tampilan user dengan assistant.
+      const messages = document.getElementById('chat-messages');
+      const wrapper = document.createElement('div');
+      wrapper.className = role === 'user' ? 'flex justify-end' : 'flex justify-start';
+      const bubble = document.createElement('div');
+      bubble.className = role === 'user'
+        ? 'max-w-[85%] rounded-2xl rounded-br-md bg-[#133E87] px-4 py-3 text-sm leading-relaxed text-white shadow-sm'
+        : 'max-w-[85%] rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 shadow-sm whitespace-pre-wrap';
+      if (role === 'assistant') {
+        // Format jawaban AI agar paragraf, heading, bullet, dan markdown terbaca.
+        bubble.innerHTML = formatAssistantResponse(text);
+      } else {
+        bubble.textContent = text;
+      }
+      wrapper.appendChild(bubble);
+      messages.appendChild(wrapper);
+      messages.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      return bubble;
+    }
+
+    function escapeHtml(text) {
+      // Lindungi tampilan dari HTML yang mungkin muncul di teks jawaban.
+      const element = document.createElement('div');
+      element.textContent = text;
+      return element.innerHTML;
+    }
+
+    function formatAssistantResponse(text) {
+      // Ubah teks jawaban menjadi HTML sederhana yang aman untuk ditampilkan.
+      const lines = escapeHtml(text).split('\n');
+      let html = '';
+      let listItems = [];
+
+      function closeList() {
+        // Tutup daftar bullet yang sedang dikumpulkan sebelum pindah ke paragraf lain.
+        if (listItems.length) {
+          html += `<ul class="my-2 ml-5 list-disc space-y-1">${listItems.join('')}</ul>`;
+          listItems = [];
+        }
+      }
+
+      for (const line of lines) {
+        // Proses jawaban baris demi baris untuk mengenali bullet dan heading.
+        const trimmed = line.trim();
+        const listMatch = trimmed.match(/^(?:\*|-|\u2022)\s+(.*)$/);
+        if (listMatch) {
+          listItems.push(`<li>${formatInlineMarkdown(listMatch[1])}</li>`);
+          continue;
+        }
+
+        closeList();
+        if (!trimmed) {
+          html += '<div class="h-2"></div>';
+        } else if (/^#{1,3}\s+/.test(trimmed)) {
+          html += `<h3 class="mt-3 mb-1 font-bold text-slate-900">${formatInlineMarkdown(trimmed.replace(/^#{1,3}\s+/, ''))}</h3>`;
+        } else {
+          html += `<p class="mb-2 last:mb-0">${formatInlineMarkdown(trimmed)}</p>`;
+        }
+      }
+      closeList();
+      return html;
+    }
+
+    function formatInlineMarkdown(text) {
+      // Dukungan markdown sederhana untuk bold dan italic.
+      return text
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/__(.+?)__/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/_(.+?)_/g, '<em>$1</em>');
+    }
+
+    // Tema visual kartu pertanyaan populer yang dibuat secara dinamis.
+    const CARD_THEMES = [
+      {
+        iconBg: "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white",
+        svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>'
+      },
+      {
+        iconBg: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white",
+        svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>'
+      },
+      {
+        iconBg: "bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white",
+        svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>'
+      },
+      {
+        iconBg: "bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white",
+        svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>'
+      },
+      {
+        iconBg: "bg-sky-50 text-sky-600 group-hover:bg-sky-600 group-hover:text-white",
+        svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>'
+      },
+      {
+        iconBg: "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white",
+        svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>'
+      }
+    ];
+
+    function renderPopularQuestions(questions) {
+      // Render maksimal enam pertanyaan dari response backend ke dalam kartu.
+      const container = document.getElementById('quick-prompts-container');
+      if (!container || !Array.isArray(questions) || questions.length === 0) return;
+
+      const hasRealData = questions.some(q => !q.is_fallback && q.count > 0);
+      // Badge Real-time hanya muncul jika tersedia data pertanyaan user yang nyata.
+      const badge = document.getElementById('popular-badge');
+      if (badge) {
+        if (hasRealData) {
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      container.innerHTML = '';
+      questions.slice(0, 6).forEach((item, index) => {
+        const theme = CARD_THEMES[index % CARD_THEMES.length];
+        const isTop = item.is_top === true;
+        const count = item.count || 0;
+        const showCountBadge = !item.is_fallback && count > 0;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = isTop
+          ? 'group relative flex items-start p-3.5 rounded-xl bg-orange-50/60 border border-orange-300/80 hover:border-orange-400 hover:bg-orange-50 hover:shadow-sm text-left transition-all duration-150'
+          : 'group relative flex items-start p-3.5 rounded-xl bg-white border border-slate-200/90 hover:border-blue-400/80 hover:bg-blue-50/30 hover:shadow-sm text-left transition-all duration-150';
+
+        button.addEventListener('click', () => {
+          // Klik kartu memasukkan prompt ke input, bukan langsung mengirimnya.
+          insertPrompt(item.prompt || item.title);
+        });
+
+        // Badge 🔥 untuk terpopuler (rank 1)
+        if (isTop) {
+          const topBadge = document.createElement('span');
+          topBadge.className = 'absolute top-2 right-2 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-orange-100 text-orange-600 border border-orange-200';
+          topBadge.innerHTML = '🔥 Terpopuler';
+          button.appendChild(topBadge);
+        } else if (showCountBadge) {
+          // Badge hitungan untuk kotak lainnya
+          const countBadge = document.createElement('span');
+          countBadge.className = 'absolute top-2 right-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500 border border-slate-200';
+          countBadge.textContent = `${count}x ditanya`;
+          button.appendChild(countBadge);
+        }
+
+        const iconDiv = document.createElement('div');
+        iconDiv.className = `w-8 h-8 rounded-lg ${theme.iconBg} flex items-center justify-center mr-3 mt-0.5 transition-colors flex-shrink-0`;
+        iconDiv.innerHTML = theme.svg;
+
+        const contentDiv = document.createElement('div');
+
+        contentDiv.className = 'flex-1 min-w-0 pr-12';
+
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'text-sm font-medium text-slate-800 group-hover:text-blue-900 leading-snug block line-clamp-2';
+        titleSpan.textContent = item.title;
+
+        const subtitleSpan = document.createElement('span');
+        subtitleSpan.className = 'text-xs text-slate-400 mt-0.5 block truncate';
+        subtitleSpan.textContent = item.subtitle || '';
+
+        contentDiv.appendChild(titleSpan);
+        contentDiv.appendChild(subtitleSpan);
+
+        button.appendChild(iconDiv);
+        button.appendChild(contentDiv);
+        container.appendChild(button);
+      });
+    }
+
+    async function loadPopularQuestions() {
+      // Ambil pertanyaan populer dari endpoint FastAPI.
+      try {
+        const response = await fetch('/api/popular-questions');
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.questions && data.questions.length > 0) {
+            renderPopularQuestions(data.questions);
+          }
+        }
+      } catch (err) {
+        console.warn('Gagal memuat pertanyaan populer:', err);
+      }
+    }
+
+    // Panggil saat inisialisasi awal setelah DOM siap digunakan.
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadPopularQuestions);
+    } else {
+      loadPopularQuestions();
+    }
+
+    document.getElementById('chat-form')?.addEventListener('submit', async function(e) {
+      // Tangani submit form tanpa reload halaman.
+      e.preventDefault();
+      const input = document.getElementById('user-query-input');
+      const submitButton = this.querySelector('button[type="submit"]');
+      const question = input?.value.trim();
+      if (!question) return;
+
+      // Tampilkan pertanyaan user dan kunci input selama request berlangsung.
+      addMessage(question, 'user');
+      input.value = '';
+      input.disabled = true;
+      submitButton.disabled = true;
+      submitButton.classList.add('opacity-60', 'cursor-wait');
+      const loading = addMessage('Sedang mencari informasi...', 'assistant');
+
+      try {
+        // Kirim pertanyaan dalam format JSON ke backend RAG.
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: question })
+        });
+        const responseText = await response.text();
+        // Baca sebagai text terlebih dahulu agar error non-JSON dapat ditangani.
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          throw new Error(`Server mengembalikan error (${response.status}).`);
+        }
+        if (!response.ok) throw new Error(data.detail || 'Server gagal memproses pertanyaan.');
+        loading.innerHTML = formatAssistantResponse(data.response || 'Maaf, belum ada jawaban.');
+
+        // Perbarui kartu populer karena pertanyaan terbaru sudah dicatat backend.
+        loadPopularQuestions();
+      } catch (error) {
+        // Tampilkan error pada bubble assistant jika request gagal.
+        loading.className = 'max-w-[85%] rounded-2xl rounded-bl-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-relaxed text-rose-700 shadow-sm whitespace-pre-wrap';
+        loading.textContent = error.message;
+      } finally {
+        // Aktifkan kembali input setelah request selesai atau gagal.
+        input.disabled = false;
+        submitButton.disabled = false;
+        submitButton.classList.remove('opacity-60', 'cursor-wait');
+        input.focus();
+      }
+    });
+  </script>
+</body></html>
